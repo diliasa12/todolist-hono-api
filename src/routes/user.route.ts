@@ -40,4 +40,18 @@ userRoute.post("/login", async (c) => {
   c.status(200);
   return c.json(result);
 });
+userRoute.patch("/update/:id", async (c) => {
+  const { email, username } = await c.req.json();
+  const id = c.req.param("id");
+  const result = await user.update({ email, username }, id);
+  c.status(202);
+  return c.json({ success: true, result });
+});
+userRoute.patch("/password/:id", async (c) => {
+  const { password } = await c.req.json();
+  const id = c.req.param("id");
+  const result = await user.passUpdate(password, id);
+  c.status(202);
+  return c.json(result);
+});
 export default userRoute;
