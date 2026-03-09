@@ -1,4 +1,5 @@
 import { sign, verify } from "hono/jwt";
+import "dotenv/config";
 
 export const authServices = {
   generateAccessToken: async (userId: string) =>

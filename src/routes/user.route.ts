@@ -1,11 +1,13 @@
-import { Hono } from "hono";
+import { Context, Hono } from "hono";
 import db from "../db/db";
 import { eq } from "drizzle-orm";
 import { users } from "../db/schema";
 import { user } from "../services/user.service";
 import { NewUser } from "../../types";
+import auth from "../middlewares/auth.middleware";
 const userRoute = new Hono();
-userRoute.get("/:id", async (c) => {
+
+userRoute.get("/:id", auth, async (c) => {
   const id = c.req.param("id");
   const [data] = await db
     .select({
@@ -20,9 +22,7 @@ userRoute.get("/:id", async (c) => {
 });
 userRoute.post("/register", async (c) => {
   const data: NewUser = await c.req.json();
-  console.log(data);
-  const result: { id: string; username: string; email: string }[] | null =
-    await user.register(data);
+  const result = await user.register(data);
   if (!result) {
     c.status(400);
     return c.json({ success: false, message: "Request body doesn't exist" });
@@ -40,14 +40,21 @@ userRoute.post("/login", async (c) => {
   c.status(200);
   return c.json(result);
 });
-userRoute.patch("/update/:id", async (c) => {
+
+userRoute.delete("/logout", auth, async (c: Context) => {
+  const { refreshToken } = await c.req.json();
+  const result = await user.login(refreshToken);
+  return c.json(result, 200);
+});
+
+userRoute.patch("/update/:id", auth, async (c) => {
   const { email, username } = await c.req.json();
   const id = c.req.param("id");
   const result = await user.update({ email, username }, id);
   c.status(202);
   return c.json({ success: true, result });
 });
-userRoute.patch("/password/:id", async (c) => {
+userRoute.patch("/password/:id", auth, async (c) => {
   const { password } = await c.req.json();
   const id = c.req.param("id");
   const result = await user.passUpdate(password, id);
