@@ -5,6 +5,7 @@ import { users } from "../db/schema";
 import { user } from "../services/user.service";
 import { NewUser } from "../../types";
 import auth from "../middlewares/auth.middleware";
+import { User } from "../utils/validation";
 const userRoute = new Hono();
 
 userRoute.get("/:id", auth, async (c) => {
@@ -21,7 +22,7 @@ userRoute.get("/:id", auth, async (c) => {
   return c.json({ succes: true, data });
 });
 userRoute.post("/register", async (c) => {
-  const data: NewUser = await c.req.json();
+  const data: NewUser = await User.parseAsync(c.req.json());
   const result = await user.register(data);
   if (!result) {
     c.status(400);
