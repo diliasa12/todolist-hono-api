@@ -8,6 +8,20 @@
       "when": 1772951007521,
       "tag": "0000_mixed_mach_iv",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772964213056,
+      "tag": "0001_clear_iron_patriot",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1772981873462,
+      "tag": "0002_nice_solo",
+      "breakpoints": true
     }
   ]
 }
