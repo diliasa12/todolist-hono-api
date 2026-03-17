@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 export const User = z.object({
-  id: z.uuid(),
+  id: z.uuid().default(() => crypto.randomUUID()),
   username: z.string().min(1, "Enter Your Username"),
   email: z.email(),
   passwordHash: z
