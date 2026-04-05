@@ -6,21 +6,38 @@ import { user } from "../handlers/user.service";
 import { NewUser } from "../db/schema";
 import auth from "../middlewares/auth.middleware";
 import { User } from "../utils/validation";
+import { describeRoute, resolver, validator } from "hono-openapi";
 const userRoute = new Hono();
 
-userRoute.get("/:id", auth, async (c) => {
-  const id = c.req.param("id");
-  const [data] = await db
-    .select({
-      id: users.id,
-      username: users.username,
-      email: users.email,
-    })
-    .from(users)
-    .where(eq(users.id, id));
-  c.status(200);
-  return c.json({ succes: true, data });
-});
+userRoute.get(
+  "/:id",
+  describeRoute({
+    description: "GET user by id",
+    responses: {
+      200: {
+        description: "Successful response",
+        content: {
+          "application/json": { schema: resolver(User) },
+        },
+      },
+    },
+  }),
+  auth,
+  async (c) => {
+    const id = c.req.param("id");
+    const [data]: User[] = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        email: users.email,
+        passwordHash: users.passwordHash,
+      })
+      .from(users)
+      .where(eq(users.id, id));
+    c.status(200);
+    return c.json({ succes: true, data });
+  },
+);
 userRoute.post("/register", async (c) => {
   const content: NewUser = await c.req.json();
   const data = User.parse(content);
@@ -46,11 +63,9 @@ userRoute.post("/login", async (c) => {
 
 userRoute.delete("/logout", auth, async (c: Context) => {
   console.log("masuk");
-
   const { refreshToken } = await c.req.json();
   if (!refreshToken) return c.json("require refreshToken in req body", 400);
   const result = await user.logout(refreshToken);
-  console.log(result);
   return c.json(result, 200);
 });
 

@@ -74,7 +74,7 @@ export const user = {
     const deletedRefreshToken = await db
       .delete(refreshTokens)
       .where(eq(refreshTokens.token, refreshToken));
-    console.log(deletedRefreshToken);
+
     if (deletedRefreshToken.rowCount === 0)
       return { success: false, message: "logout failed" };
     return { success: true, message: "Logout success" };

@@ -2,11 +2,13 @@ import { sign, verify } from "hono/jwt";
 import "dotenv/config";
 
 export const authServices = {
-  generateAccessToken: async (userId: string) =>
-    await sign(
+  generateAccessToken: async (userId: string) => {
+    console.log(userId);
+    return await sign(
       { userId, exp: Math.floor(Date.now() / 1000) + 60 * 15 },
       process.env.SECRET_KEY!,
-    ),
+    );
+  },
   generateRefreshToken: async (userId: string) =>
     await sign(
       { userId, exp: Math.floor(Date.now() / 1000) + 60 * 15 },
