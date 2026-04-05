@@ -1,4 +1,4 @@
-import { NewUser } from "../../types";
+import { NewUser } from "../db/schema";
 import { compareSync, genSaltSync, hashSync } from "bcrypt-ts";
 import db from "../db/db";
 import { refreshTokens, users } from "../db/schema";
@@ -18,7 +18,7 @@ export const user = {
       .insert(users)
       .values({
         username: data.username,
-        email: data.username,
+        email: data.email,
         passwordHash: password,
       })
       .returning({
@@ -47,13 +47,14 @@ export const user = {
       .where(eq(users.email, data.email));
 
     const { password, id } = result;
+
     const passMatch = compareSync(data.password, password);
     if (!passMatch) return { success: false, message: "Wrong password" };
 
     const accessToken = await authServices.generateAccessToken(id);
     const refreshToken = await authServices.generateRefreshToken(id);
 
-    console.log(refreshToken);
+    await db.delete(refreshTokens).where(eq(refreshTokens.userId, id));
     await db.insert(refreshTokens).values({
       userId: result.id,
       token: refreshToken,
@@ -69,10 +70,13 @@ export const user = {
   },
   logout: async (token: string) => {
     const refreshToken = token;
-    await db
-      .delete(refreshTokens)
-      .where(eq(refreshTokens.userId, refreshToken));
 
+    const deletedRefreshToken = await db
+      .delete(refreshTokens)
+      .where(eq(refreshTokens.token, refreshToken));
+
+    if (deletedRefreshToken.rowCount === 0)
+      return { success: false, message: "logout failed" };
     return { success: true, message: "Logout success" };
   },
   update: async (data: object, id: string) => {

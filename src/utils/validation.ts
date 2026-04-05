@@ -1,7 +1,10 @@
-import * as z from "zod";
+import { z } from "zod";
 
 export const User = z.object({
-  id: z.string().uuid(),
+  id: z
+    .string()
+    .uuid()
+    .default(() => crypto.randomUUID()),
   username: z.string().min(1, "Enter Your Username"),
   email: z.string().email(),
   passwordHash: z
@@ -27,3 +30,6 @@ export const Token = z.object({
   userId: z.string().uuid().min(1, "user id required"),
   token: z.string().min(1, "Token required"),
 });
+
+export type User = z.infer<typeof User>;
+export type Todos = z.infer<typeof Todos>;
